@@ -576,10 +576,12 @@ window.addEventListener('scroll', () => {
 function toggleMobile() {
   document.getElementById('hamburger').classList.toggle('open');
   document.getElementById('mobileMenu').classList.toggle('open');
+  document.body.style.overflow = document.getElementById('mobileMenu').classList.contains('open') ? 'hidden' : '';
 }
 function closeMobile() {
   document.getElementById('hamburger').classList.remove('open');
   document.getElementById('mobileMenu').classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 // Reveal on scroll
