@@ -1,0 +1,17 @@
+name = "cdl-alpha-ai"
+main = "worker.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Deploy steps:
+#   1. npm install -g wrangler
+#   2. wrangler login
+#   3. wrangler secret put ANTHROPIC_API_KEY   (paste your key when prompted)
+#   4. wrangler deploy
+#   5. Copy the worker URL and update CDL_WORKER_URL in index.html
+
+# Optional: bind the worker to your domain so it lives at
+# cdlalphadrivingschool.org/api/chat instead of a workers.dev subdomain
+# [[routes]]
+# pattern = "cdlalphadrivingschool.org/api/chat"
+# zone_name = "cdlalphadrivingschool.org"
