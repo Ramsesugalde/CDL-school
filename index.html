@@ -464,6 +464,9 @@ footer{background:var(--black);border-top:1px solid rgba(240,165,0,0.1);padding:
     <div class="divider reveal"></div>
     <p class="section-body reveal" style="max-width:100%">Take the first step toward your CDL career. Fill out the form below and our enrollment team will contact you within 24 hours.</p>
 
+    <div id="form-send-error" style="display:none;background:rgba(192,57,43,0.15);border:1px solid #c0392b;color:#e74c3c;padding:1rem 1.5rem;border-radius:4px;font-size:0.9rem;text-align:center;margin-bottom:1rem">
+      ⚠️ Something went wrong. Please try again or email us directly at <strong>cdlschooldfw1@outlook.com</strong>
+    </div>
     <div id="enrollForm">
       <form class="form-grid" onsubmit="submitForm(event)" novalidate>
         <div class="form-group">
@@ -682,7 +685,9 @@ function submitForm(e) {
   .catch(() => {
     btn.disabled = false;
     btn.textContent = '🚛 Submit Enrollment Request';
-    alert('There was a problem submitting your request. Please email us directly at cdlschooldfw1@outlook.com');
+    const errBox = document.getElementById('form-send-error');
+    errBox.style.display = 'block';
+    setTimeout(() => errBox.style.display = 'none', 5000);
   });
 }
 </script>
