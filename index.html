@@ -658,13 +658,16 @@ function submitForm(e) {
   btn.disabled = true;
   btn.textContent = 'Sending…';
 
+  const studentEmail = document.getElementById('f-email').value.trim();
   const payload = {
     _subject: 'New CDL Alpha Enrollment Request',
+    _replyto: studentEmail,
+    _autoresponse: 'Thank you for your interest in CDL Alpha Driving School! We received your enrollment request and an advisor will contact you within 24 hours to discuss your program options, schedule, and financing. Get ready to start your CDL career! — CDL Alpha Team',
     _captcha: 'false',
     first_name: document.getElementById('f-first').value.trim(),
     last_name: document.getElementById('f-last').value.trim(),
     phone: document.getElementById('f-phone').value.trim(),
-    email: document.getElementById('f-email').value.trim(),
+    email: studentEmail,
     course: document.getElementById('f-course').value,
     schedule: document.getElementById('f-schedule').value,
     source: document.getElementById('f-source').value,
@@ -691,7 +694,8 @@ function submitForm(e) {
     btn.textContent = '🚛 Submit Enrollment Request';
     const errBox = document.getElementById('form-send-error');
     errBox.style.display = 'block';
-    setTimeout(() => errBox.style.display = 'none', 5000);
+    clearTimeout(errBox._t);
+    errBox._t = setTimeout(() => errBox.style.display = 'none', 6000);
   });
 }
 </script>
