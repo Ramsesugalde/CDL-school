@@ -629,9 +629,7 @@ function toggleFaq(btn) {
   if (!isOpen) item.classList.add('open');
 }
 
-// Duplicate ticker for seamless loop
-const track = document.getElementById('ticker');
-if (track) track.innerHTML += track.innerHTML;
+// Ticker HTML already contains doubled items for seamless loop
 
 // Form submission
 function submitForm(e) {
@@ -649,7 +647,7 @@ function submitForm(e) {
 
   check('f-first', 'e-first', v => v.length > 0);
   check('f-last', 'e-last', v => v.length > 0);
-  check('f-phone', 'e-phone', v => /^[\d\s\(\)\-\+]{7,}$/.test(v));
+  check('f-phone', 'e-phone', v => v.replace(/\D/g,'').length >= 7);
   check('f-email', 'e-email', v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
   check('f-course', 'e-course', v => v.length > 0);
 
