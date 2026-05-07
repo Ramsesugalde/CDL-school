@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#F0A500">
 <title>CDL Alpha Driving School | Get Your CDL License in 8 Weeks</title>
 <meta name="description" content="CDL Alpha Driving School offers Class A & Class B CDL training in the DFW area. Professional instructors, job placement assistance, and flexible schedules. Grand Opening May 23, 2026 — Enroll Now!">
 <meta name="keywords" content="CDL school, CDL training, Class A CDL, Class B CDL, truck driving school, DFW CDL, commercial driver license">
@@ -471,22 +472,22 @@ footer{background:var(--black);border-top:1px solid rgba(240,165,0,0.1);padding:
       <form class="form-grid" onsubmit="submitForm(event)" novalidate>
         <div class="form-group">
           <label>First Name <span class="required-mark">*</span></label>
-          <input type="text" id="f-first" placeholder="John" required>
+          <input type="text" id="f-first" placeholder="John" required autocomplete="given-name">
           <span class="field-error" id="e-first">First name is required</span>
         </div>
         <div class="form-group">
           <label>Last Name <span class="required-mark">*</span></label>
-          <input type="text" id="f-last" placeholder="Smith" required>
+          <input type="text" id="f-last" placeholder="Smith" required autocomplete="family-name">
           <span class="field-error" id="e-last">Last name is required</span>
         </div>
         <div class="form-group">
           <label>Phone Number <span class="required-mark">*</span></label>
-          <input type="tel" id="f-phone" placeholder="(555) 000-0000" required>
+          <input type="tel" id="f-phone" placeholder="(555) 000-0000" required autocomplete="tel" inputmode="tel">
           <span class="field-error" id="e-phone">Valid phone number required</span>
         </div>
         <div class="form-group">
           <label>Email Address <span class="required-mark">*</span></label>
-          <input type="email" id="f-email" placeholder="john@email.com" required>
+          <input type="email" id="f-email" placeholder="john@email.com" required autocomplete="email" inputmode="email">
           <span class="field-error" id="e-email">Valid email required</span>
         </div>
         <div class="form-group">
