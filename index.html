@@ -676,8 +676,12 @@ function submitForm(e) {
     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
     body: JSON.stringify(payload)
   })
-  .then(res => res.json())
-  .then(() => {
+  .then(res => {
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.json();
+  })
+  .then(data => {
+    if (data.success !== 'true' && data.success !== true) throw new Error('Submission failed');
     document.getElementById('enrollForm').style.display = 'none';
     document.getElementById('successScreen').classList.add('show');
     window.scrollTo({ top: document.getElementById('enroll').offsetTop - 80, behavior: 'smooth' });
