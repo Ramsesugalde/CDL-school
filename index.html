@@ -818,5 +818,222 @@ function submitForm(e) {
   });
 }
 </script>
+
+<!-- ═══════════════════════════════════════════════════
+     CDL STUDY AI — Floating Chat Widget
+     ───────────────────────────────────────────────────
+     SETUP:
+     1. Deploy worker.js to Cloudflare Workers
+        > wrangler secret put ANTHROPIC_API_KEY
+        > wrangler deploy
+     2. Replace CDL_WORKER_URL below with your worker URL
+     ═══════════════════════════════════════════════════ -->
+<style>
+#cdl-chat-widget{position:fixed;bottom:1.75rem;right:1.75rem;z-index:9000;font-family:'Barlow',sans-serif}
+#chat-toggle{background:var(--gold);color:var(--black);border:none;border-radius:50px;padding:0.7rem 1.3rem;font-family:'Barlow Condensed',sans-serif;font-size:0.88rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:0.5rem;box-shadow:0 6px 24px rgba(240,165,0,0.45);transition:background 0.2s,transform 0.15s,box-shadow 0.2s;position:relative}
+#chat-toggle:hover{background:var(--gold-light);transform:translateY(-2px);box-shadow:0 10px 32px rgba(240,165,0,0.55)}
+#chat-badge{position:absolute;top:-6px;right:-6px;background:#e74c3c;color:#fff;border-radius:50%;width:18px;height:18px;font-size:0.65rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+#chat-window{position:absolute;bottom:4.2rem;right:0;width:375px;height:530px;background:var(--dark);border:1px solid rgba(240,165,0,0.3);border-radius:10px;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,0.75);overflow:hidden;transform-origin:bottom right;transition:transform 0.28s cubic-bezier(.175,.885,.32,1.275),opacity 0.2s}
+#chat-window.chat-hidden{transform:scale(0.75) translateY(10px);opacity:0;pointer-events:none}
+#chat-header{background:linear-gradient(135deg,#1a1200,#0d0a00);border-bottom:1px solid rgba(240,165,0,0.18);padding:0.9rem 1.1rem;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+#chat-htitle{display:flex;align-items:center;gap:0.65rem}
+#chat-hicon{font-size:1.4rem;line-height:1}
+#chat-hname{font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;font-weight:700;letter-spacing:1.5px;color:var(--gold);text-transform:uppercase;line-height:1.2}
+#chat-hstatus{font-size:0.65rem;color:#4CAF50;display:flex;align-items:center;gap:0.3rem;margin-top:2px}
+.chat-sdot{width:5px;height:5px;border-radius:50%;background:#4CAF50;animation:sdotPulse 2s ease-in-out infinite}
+@keyframes sdotPulse{0%,100%{opacity:1}50%{opacity:0.35}}
+#chat-hclose{background:none;border:none;color:var(--gray);cursor:pointer;font-size:1.1rem;padding:4px;line-height:1;transition:color 0.2s}
+#chat-hclose:hover{color:var(--white)}
+#chat-msgs{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.7rem;scroll-behavior:smooth}
+#chat-msgs::-webkit-scrollbar{width:3px}
+#chat-msgs::-webkit-scrollbar-thumb{background:rgba(240,165,0,0.25);border-radius:2px}
+.cm{display:flex;flex-direction:column;max-width:88%;animation:cmIn 0.28s ease}
+@keyframes cmIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.cm.bot{align-self:flex-start}.cm.user{align-self:flex-end}
+.cb{padding:0.6rem 0.9rem;border-radius:14px;font-size:0.865rem;line-height:1.65;word-wrap:break-word}
+.cm.bot .cb{background:var(--dark3);color:var(--white);border:1px solid rgba(240,165,0,0.1);border-bottom-left-radius:4px}
+.cm.user .cb{background:var(--gold);color:var(--black);font-weight:600;border-bottom-right-radius:4px}
+.cqa{display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.4rem}
+.cqb{background:rgba(240,165,0,0.08);border:1px solid rgba(240,165,0,0.28);color:var(--gold);padding:0.28rem 0.65rem;border-radius:20px;font-size:0.73rem;font-weight:600;cursor:pointer;transition:background 0.2s,border-color 0.2s;font-family:'Barlow',sans-serif;white-space:nowrap}
+.cqb:hover{background:rgba(240,165,0,0.18);border-color:var(--gold)}
+#chat-typing{padding:0.45rem 1rem 0.1rem;display:flex;align-items:center;gap:4px;flex-shrink:0}
+#chat-typing span{width:7px;height:7px;border-radius:50%;background:var(--gold);opacity:0.35;animation:ctd 1.2s ease-in-out infinite}
+#chat-typing span:nth-child(2){animation-delay:0.2s}
+#chat-typing span:nth-child(3){animation-delay:0.4s}
+@keyframes ctd{0%,60%,100%{opacity:0.35;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
+#chat-ia{padding:0.7rem 0.8rem;border-top:1px solid rgba(240,165,0,0.12);display:flex;gap:0.45rem;background:var(--dark2);flex-shrink:0}
+#chat-input{flex:1;background:var(--dark3);border:1px solid rgba(255,255,255,0.09);color:var(--white);padding:0.6rem 0.85rem;border-radius:22px;font-family:'Barlow',sans-serif;font-size:0.865rem;outline:none;transition:border-color 0.2s;min-width:0}
+#chat-input:focus{border-color:rgba(240,165,0,0.45)}
+#chat-input::placeholder{color:#4a4a4a}
+#chat-input:disabled{opacity:0.5}
+#chat-send{background:var(--gold);color:var(--black);border:none;width:36px;height:36px;border-radius:50%;font-size:0.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;align-self:center;transition:background 0.2s,transform 0.15s}
+#chat-send:hover{background:var(--gold-light);transform:scale(1.08)}
+#chat-send:disabled{opacity:0.45;cursor:not-allowed;transform:none}
+@media(max-width:480px){#cdl-chat-widget{bottom:1rem;right:1rem}#chat-window{width:calc(100vw - 2rem);right:0}#chat-toggle-label{display:none}}
+</style>
+
+<div id="cdl-chat-widget">
+  <div id="chat-window" class="chat-hidden">
+    <div id="chat-header">
+      <div id="chat-htitle">
+        <span id="chat-hicon">🚛</span>
+        <div>
+          <div id="chat-hname">CDL Study AI</div>
+          <div id="chat-hstatus"><span class="chat-sdot"></span>Texas CDL Expert</div>
+        </div>
+      </div>
+      <button id="chat-hclose" onclick="cdlChatToggle()" aria-label="Close">✕</button>
+    </div>
+    <div id="chat-msgs"></div>
+    <div id="chat-typing" style="display:none"><span></span><span></span><span></span></div>
+    <div id="chat-ia">
+      <input id="chat-input" type="text" placeholder="Ask about CDL exams, tips…" autocomplete="off">
+      <button id="chat-send">&#9658;</button>
+    </div>
+  </div>
+  <button id="chat-toggle" onclick="cdlChatToggle()" aria-label="Open CDL Study AI">
+    <span>🚛</span>
+    <span id="chat-toggle-label">CDL Study AI</span>
+    <span id="chat-badge" style="display:none">1</span>
+  </button>
+</div>
+
+<script>
+(function () {
+  // Update this URL after deploying worker.js:
+  //   wrangler secret put ANTHROPIC_API_KEY
+  //   wrangler deploy
+  // then paste your workers.dev URL here.
+  var CDL_WORKER_URL = 'https://cdl-alpha-ai.YOUR_SUBDOMAIN.workers.dev';
+
+  var chatOpen = false;
+  var chatHistory = [];
+  var chatReady = false;
+
+  window.cdlChatToggle = function () {
+    chatOpen = !chatOpen;
+    var win = document.getElementById('chat-window');
+    var icon = document.getElementById('chat-hicon');
+    win.classList.toggle('chat-hidden', !chatOpen);
+    document.getElementById('chat-badge').style.display = 'none';
+    icon.textContent = chatOpen ? '✕' : '🚛';
+
+    if (chatOpen && !chatReady) {
+      chatReady = true;
+      addBot(
+        '👋 Hi! I\'m your **CDL Study AI** — built to help you pass the Texas CDL exam at DPS.\n\nI can give you **practice test questions**, explain any topic, or share **tips** for every section. What do you need?',
+        [
+          { label: '📝 Practice Questions', q: 'Give me General Knowledge practice test questions' },
+          { label: '💡 Tips to Pass', q: 'What are the best tips to pass all sections of the Texas CDL exam?' },
+          { label: '🏛️ Texas DPS Process', q: 'Walk me through the Texas CDL process at DPS — requirements, fees, and steps' },
+          { label: '💨 Air Brakes', q: 'Help me study the Air Brakes section — key numbers and what to memorize' },
+        ]
+      );
+      setTimeout(function () { document.getElementById('chat-input').focus(); }, 300);
+    }
+    if (!chatOpen) icon.textContent = '🚛';
+  };
+
+  function mdToHtml(t) {
+    return t
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*([^*]+?)\*/g, '<em>$1</em>')
+      .replace(/^#{1,3}\s+(.+)$/gm, '<strong>$1</strong>')
+      .replace(/^[-•]\s+(.+)$/gm, '&bull; $1')
+      .replace(/\n/g, '<br>');
+  }
+
+  function addBot(text, actions) {
+    var msgs = document.getElementById('chat-msgs');
+    var wrap = document.createElement('div');
+    wrap.className = 'cm bot';
+    var bub = document.createElement('div');
+    bub.className = 'cb';
+    bub.innerHTML = mdToHtml(text);
+    wrap.appendChild(bub);
+    if (actions && actions.length) {
+      var qa = document.createElement('div');
+      qa.className = 'cqa';
+      actions.forEach(function (a) {
+        var btn = document.createElement('button');
+        btn.className = 'cqb';
+        btn.textContent = a.label;
+        btn.onclick = function () { qa.remove(); doSend(a.q); };
+        qa.appendChild(btn);
+      });
+      wrap.appendChild(qa);
+    }
+    msgs.appendChild(wrap);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function addUser(text) {
+    var msgs = document.getElementById('chat-msgs');
+    var wrap = document.createElement('div');
+    wrap.className = 'cm user';
+    var bub = document.createElement('div');
+    bub.className = 'cb';
+    bub.textContent = text;
+    wrap.appendChild(bub);
+    msgs.appendChild(wrap);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function setLoading(on) {
+    document.getElementById('chat-typing').style.display = on ? 'flex' : 'none';
+    document.getElementById('chat-send').disabled = on;
+    document.getElementById('chat-input').disabled = on;
+    if (on) document.getElementById('chat-msgs').scrollTop = document.getElementById('chat-msgs').scrollHeight;
+  }
+
+  async function doSend(text) {
+    var clean = (text || '').trim();
+    if (!clean) return;
+    addUser(clean);
+    chatHistory.push({ role: 'user', content: clean });
+    setLoading(true);
+    try {
+      var res = await fetch(CDL_WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: chatHistory.slice(-10) }),
+      });
+      var data = await res.json();
+      var reply = data.content || 'Sorry, I had trouble responding. Please try again!';
+      chatHistory.push({ role: 'assistant', content: reply });
+      addBot(reply);
+    } catch (e) {
+      addBot('⚠️ Connection error. Make sure the worker URL is set and your internet is working.');
+    } finally {
+      setLoading(false);
+      document.getElementById('chat-input').focus();
+    }
+  }
+
+  document.getElementById('chat-send').addEventListener('click', function () {
+    var inp = document.getElementById('chat-input');
+    var v = inp.value.trim();
+    if (!v) return;
+    inp.value = '';
+    doSend(v);
+  });
+
+  document.getElementById('chat-input').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      var v = this.value.trim();
+      if (!v) return;
+      this.value = '';
+      doSend(v);
+    }
+  });
+
+  // Draw attention badge after 4 seconds if chat hasn't been opened
+  setTimeout(function () {
+    if (!chatOpen) document.getElementById('chat-badge').style.display = 'flex';
+  }, 4000);
+}());
+</script>
 </body>
 </html>
